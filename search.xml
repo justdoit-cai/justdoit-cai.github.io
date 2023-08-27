@@ -4,31 +4,6 @@
   
     
     <entry>
-      <title>iptables实现流量转发</title>
-      <link href="/2023/08/25/iptables%E5%AE%9E%E7%8E%B0%E6%B5%81%E9%87%8F%E8%BD%AC%E5%8F%91/"/>
-      <url>/2023/08/25/iptables%E5%AE%9E%E7%8E%B0%E6%B5%81%E9%87%8F%E8%BD%AC%E5%8F%91/</url>
-      
-        <content type="html"><![CDATA[<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://blog.csdn.net/uiop_uiop_uiop/article/details/128095847</span><br></pre></td></tr></table></figure><h1 id="内网流量转发"><a href="#内网流量转发" class="headerlink" title="内网流量转发"></a>内网流量转发</h1><h2 id="本地端口转发"><a href="#本地端口转发" class="headerlink" title="本地端口转发"></a>本地端口转发</h2><p>将本地访问本机 10001 端口的流量转发到本机 10002 端口。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A OUTPUT -p tcp --dport 10001 -j REDIRECT --to-ports 10002</span><br></pre></td></tr></table></figure><p>然后自己 <code>curl</code> 自己的 10001 端口，发现 10002 端口收到了流量。</p><h2 id="外网端口转发"><a href="#外网端口转发" class="headerlink" title="外网端口转发"></a>外网端口转发</h2><p>将外网访问本机 10001 端口的流量转发到本机 10002 端口。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A PREROUTING -p tcp --dport 10001 -j REDIRECT --to-ports 10002</span><br></pre></td></tr></table></figure><h1 id="通过跳板机流量转发"><a href="#通过跳板机流量转发" class="headerlink" title="通过跳板机流量转发"></a>通过跳板机流量转发</h1><p>假设转发服务器的地址 <code>192.168.188.130</code> 。目的服务器的地址是 <code>114.132.243.19</code> 。在转发服务器上把 <code>8080</code> 端口转发到 <code>114.132.243.19</code> 的 <code>80</code> 端口。</p><ol><li><p>打开 <code>ipv4</code> 的转发功能。<br>[[arp攻击#arp实验]]</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 1 &gt; /proc/sys/net/ipv4/ip_forward</span><br></pre></td></tr></table></figure></li><li><p>在 <code>PREROUTING</code> 上修改目的地址</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A PREROUTING -p tcp --dport 8080 -j DNAT --to-destination 114.132.243.19:80</span><br></pre></td></tr></table></figure></li></ol><p><img src="/imgs/1677932408931.png"></p><p>这里的报错应该是复制粘贴的问题，好像复制的空格被看作了 <code>&amp;nbsp;</code> ，不是代码的问题，导致没有把 <code>8080</code> 和 <code>j</code> 识别分开。</p><p><img src="/imgs/1677931663908.png"></p><p><img src="/imgs/1677932796726.png"></p><ol start="3"><li>在 <code>POSTROUTING</code> 上修改源地址<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A POSTROUTING -d 114.132.243.198 -p tcp --dport 80 -j SNAT --to 192.168.188.130</span><br></pre></td></tr></table></figure>或者用伪装的方式<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A POSTROUTING -d 114.132.243.19 -p tcp --dport 80 -j MASQUERADE</span><br></pre></td></tr></table></figure></li></ol><p><img src="/imgs/1677932607172.png"></p><ol start="4"><li>为了防止在 <code>FORWARD</code> 上面被丢弃，添加规则允许通过。<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.  </span><br><span class="line">iptables -I FORWARD -d 114.132.243.19 -p tcp --dport 80 -j ACCEPT</span><br><span class="line">2.</span><br><span class="line">iptables -I FORWARD -s 114.132.243.19 -p tcp --sport 80 -j ACCEPT</span><br></pre></td></tr></table></figure></li></ol><p><img src="/imgs/1677931921783.png"></p><p>注意 <code>iptables</code> 的增加和删除有一定的延迟，测试的时候要注意。</p><p>现在就可以在客户端上测试一下访问 <code>192.168.188.130:8080</code> 就会访问到 <code>114.132.243.19:80</code> 。</p><p><img src="/imgs/1677930811243.png"></p><h1 id="IP重定向"><a href="#IP重定向" class="headerlink" title="IP重定向"></a>IP重定向</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>有时我们想让一个域名指向另一个 <code>IP</code> 时，我们会直接修改 <code>/etc/hosts</code>，来实现我们的目地。那如果是访问一个 <code>IP</code>，需要这个 <code>IP</code> 指向另一个 <code>IP</code> 呢？是的，<code>iptables</code>  可以实现这层转发。</p><ul><li><p>场景一 : 家中有一台服务器内网 IP <code>192.168.0.111</code>, 公网 IP <code>123.123.123.123</code>，你可以通过 IP <code>123.123.123.123</code>在任何地方你都可以访问到你的服务器，在家的时候你可以通过内网来访问你的服务器，当然如果你在你家的电脑把 <code>123.123.123.123</code> 指向 <code>192.168.0.111</code> 那么你依然可以用外网来访问，但是其实走的是内网流量，速度会快很多。</p></li><li><p>场景二 : 此场景源于最近装的 <code>k8s</code> 集群，由于 3 台机子不在一个内网中，所以需要用外网来建立集群。其中有参数可以配置用公网来启动集群，但是无论是阿里还是腾讯，都没有把公网绑在机子的网卡上，所以我一直启动失败。当绑定在内网上却可以启动成功，那我只能想到这个折中的方法了，因为他们内网是不通的，所以通过内网 IP 是不能访问的，可是用内网启动一定要用内网连接，那我把内网 IP 重定向到外网 IP 上不就可以了？事实证明真的成功组成了集群。当然如果有更好的解决方案也欢迎告知我。</p></li><li><p>更多使用场景请自行发掘</p></li></ul><h2 id="把外网ip映射到内网ip"><a href="#把外网ip映射到内网ip" class="headerlink" title="把外网ip映射到内网ip"></a>把外网ip映射到内网ip</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A OUTPUT -d 123.123.123.123 -j DNAT --to-destination 192.168.0.111</span><br></pre></td></tr></table></figure><h2 id="把内网ip映射到外网ip"><a href="#把内网ip映射到外网ip" class="headerlink" title="把内网ip映射到外网ip"></a>把内网ip映射到外网ip</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A OUTPUT -d 192.168.0.111 -j DNAT --to-destination 123.123.123.123</span><br></pre></td></tr></table></figure>]]></content>
-      
-      
-      <categories>
-          
-          <category> iptables </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> iptables </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>MySQL UDF提权</title>
       <link href="/2023/08/25/MySQL%20UDF%E6%8F%90%E6%9D%83/"/>
       <url>/2023/08/25/MySQL%20UDF%E6%8F%90%E6%9D%83/</url>
@@ -52,6 +27,31 @@
             <tag> 提权 </tag>
             
             <tag> MySQL </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>iptables实现流量转发</title>
+      <link href="/2023/08/25/iptables%E5%AE%9E%E7%8E%B0%E6%B5%81%E9%87%8F%E8%BD%AC%E5%8F%91/"/>
+      <url>/2023/08/25/iptables%E5%AE%9E%E7%8E%B0%E6%B5%81%E9%87%8F%E8%BD%AC%E5%8F%91/</url>
+      
+        <content type="html"><![CDATA[<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://blog.csdn.net/uiop_uiop_uiop/article/details/128095847</span><br></pre></td></tr></table></figure><h1 id="内网流量转发"><a href="#内网流量转发" class="headerlink" title="内网流量转发"></a>内网流量转发</h1><h2 id="本地端口转发"><a href="#本地端口转发" class="headerlink" title="本地端口转发"></a>本地端口转发</h2><p>将本地访问本机 10001 端口的流量转发到本机 10002 端口。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A OUTPUT -p tcp --dport 10001 -j REDIRECT --to-ports 10002</span><br></pre></td></tr></table></figure><p>然后自己 <code>curl</code> 自己的 10001 端口，发现 10002 端口收到了流量。</p><h2 id="外网端口转发"><a href="#外网端口转发" class="headerlink" title="外网端口转发"></a>外网端口转发</h2><p>将外网访问本机 10001 端口的流量转发到本机 10002 端口。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A PREROUTING -p tcp --dport 10001 -j REDIRECT --to-ports 10002</span><br></pre></td></tr></table></figure><h1 id="通过跳板机流量转发"><a href="#通过跳板机流量转发" class="headerlink" title="通过跳板机流量转发"></a>通过跳板机流量转发</h1><p>假设转发服务器的地址 <code>192.168.188.130</code> 。目的服务器的地址是 <code>114.132.243.19</code> 。在转发服务器上把 <code>8080</code> 端口转发到 <code>114.132.243.19</code> 的 <code>80</code> 端口。</p><ol><li><p>打开 <code>ipv4</code> 的转发功能。<br>[[arp攻击#arp实验]]</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 1 &gt; /proc/sys/net/ipv4/ip_forward</span><br></pre></td></tr></table></figure></li><li><p>在 <code>PREROUTING</code> 上修改目的地址</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A PREROUTING -p tcp --dport 8080 -j DNAT --to-destination 114.132.243.19:80</span><br></pre></td></tr></table></figure></li></ol><p><img src="/imgs/1677932408931.png"></p><p>这里的报错应该是复制粘贴的问题，好像复制的空格被看作了 <code>&amp;nbsp;</code> ，不是代码的问题，导致没有把 <code>8080</code> 和 <code>j</code> 识别分开。</p><p><img src="/imgs/1677931663908.png"></p><p><img src="/imgs/1677932796726.png"></p><ol start="3"><li>在 <code>POSTROUTING</code> 上修改源地址<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A POSTROUTING -d 114.132.243.198 -p tcp --dport 80 -j SNAT --to 192.168.188.130</span><br></pre></td></tr></table></figure>或者用伪装的方式<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A POSTROUTING -d 114.132.243.19 -p tcp --dport 80 -j MASQUERADE</span><br></pre></td></tr></table></figure></li></ol><p><img src="/imgs/1677932607172.png"></p><ol start="4"><li>为了防止在 <code>FORWARD</code> 上面被丢弃，添加规则允许通过。<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1.  </span><br><span class="line">iptables -I FORWARD -d 114.132.243.19 -p tcp --dport 80 -j ACCEPT</span><br><span class="line">2.</span><br><span class="line">iptables -I FORWARD -s 114.132.243.19 -p tcp --sport 80 -j ACCEPT</span><br></pre></td></tr></table></figure></li></ol><p><img src="/imgs/1677931921783.png"></p><p>注意 <code>iptables</code> 的增加和删除有一定的延迟，测试的时候要注意。</p><p>现在就可以在客户端上测试一下访问 <code>192.168.188.130:8080</code> 就会访问到 <code>114.132.243.19:80</code> 。</p><p><img src="/imgs/1677930811243.png"></p><h1 id="IP重定向"><a href="#IP重定向" class="headerlink" title="IP重定向"></a>IP重定向</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>有时我们想让一个域名指向另一个 <code>IP</code> 时，我们会直接修改 <code>/etc/hosts</code>，来实现我们的目地。那如果是访问一个 <code>IP</code>，需要这个 <code>IP</code> 指向另一个 <code>IP</code> 呢？是的，<code>iptables</code>  可以实现这层转发。</p><ul><li><p>场景一 : 家中有一台服务器内网 IP <code>192.168.0.111</code>, 公网 IP <code>123.123.123.123</code>，你可以通过 IP <code>123.123.123.123</code>在任何地方你都可以访问到你的服务器，在家的时候你可以通过内网来访问你的服务器，当然如果你在你家的电脑把 <code>123.123.123.123</code> 指向 <code>192.168.0.111</code> 那么你依然可以用外网来访问，但是其实走的是内网流量，速度会快很多。</p></li><li><p>场景二 : 此场景源于最近装的 <code>k8s</code> 集群，由于 3 台机子不在一个内网中，所以需要用外网来建立集群。其中有参数可以配置用公网来启动集群，但是无论是阿里还是腾讯，都没有把公网绑在机子的网卡上，所以我一直启动失败。当绑定在内网上却可以启动成功，那我只能想到这个折中的方法了，因为他们内网是不通的，所以通过内网 IP 是不能访问的，可是用内网启动一定要用内网连接，那我把内网 IP 重定向到外网 IP 上不就可以了？事实证明真的成功组成了集群。当然如果有更好的解决方案也欢迎告知我。</p></li><li><p>更多使用场景请自行发掘</p></li></ul><h2 id="把外网ip映射到内网ip"><a href="#把外网ip映射到内网ip" class="headerlink" title="把外网ip映射到内网ip"></a>把外网ip映射到内网ip</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A OUTPUT -d 123.123.123.123 -j DNAT --to-destination 192.168.0.111</span><br></pre></td></tr></table></figure><h2 id="把内网ip映射到外网ip"><a href="#把内网ip映射到外网ip" class="headerlink" title="把内网ip映射到外网ip"></a>把内网ip映射到外网ip</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A OUTPUT -d 192.168.0.111 -j DNAT --to-destination 123.123.123.123</span><br></pre></td></tr></table></figure>]]></content>
+      
+      
+      <categories>
+          
+          <category> iptables </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> iptables </tag>
             
         </tags>
       
