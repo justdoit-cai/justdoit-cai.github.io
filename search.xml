@@ -13,7 +13,7 @@
       
       <categories>
           
-          <category> Java </category>
+          <category> java </category>
           
           <category> RASP </category>
           
@@ -22,9 +22,9 @@
       
         <tags>
             
-            <tag> Java </tag>
-            
             <tag> RASP </tag>
+            
+            <tag> java </tag>
             
         </tags>
       

@@ -172,6 +172,13 @@
     <priority>0.2</priority>
   </url>
   
+  <url>
+    <loc>https://justdoittt.top/tags/java/</loc>
+    <lastmod>2023-11-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
 
   
   <url>
@@ -217,13 +224,6 @@
   </url>
   
   <url>
-    <loc>https://justdoittt.top/categories/Java/</loc>
-    <lastmod>2023-11-20</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://justdoittt.top/categories/java/</loc>
     <lastmod>2023-11-20</lastmod>
     <changefreq>weekly</changefreq>
@@ -238,7 +238,7 @@
   </url>
   
   <url>
-    <loc>https://justdoittt.top/categories/Java/RASP/</loc>
+    <loc>https://justdoittt.top/categories/java/RASP/</loc>
     <lastmod>2023-11-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
