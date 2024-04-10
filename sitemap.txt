@@ -1,3 +1,4 @@
+https://justdoittt.top/2024/04/11/Oracle%E6%B3%A8%E5%85%A5/
 https://justdoittt.top/2024/04/09/NTLM-Relay%E6%94%BB%E5%87%BB/
 https://justdoittt.top/2024/04/01/%E5%85%A5%E9%97%A8%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E5%AE%9E%E9%AA%8C%E4%B8%80/
 https://justdoittt.top/2024/03/24/Shiro-550%E4%B8%8D%E5%87%BA%E7%BD%91%E5%9B%9E%E6%98%BE%E6%8A%80%E6%9C%AF/
@@ -40,6 +41,7 @@ https://justdoittt.top/tags/Thymeleaf/
 https://justdoittt.top/tags/Shiro/
 https://justdoittt.top/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/
 https://justdoittt.top/tags/Redis/
+https://justdoittt.top/tags/Oracle/
 https://justdoittt.top/categories/iptables/
 https://justdoittt.top/categories/CTF/
 https://justdoittt.top/categories/CTF/%E6%8F%90%E6%9D%83/
@@ -58,3 +60,4 @@ https://justdoittt.top/categories/Java/Thymeleaf/
 https://justdoittt.top/categories/Java/Shiro/
 https://justdoittt.top/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/
 https://justdoittt.top/categories/Redis/
+https://justdoittt.top/categories/Oracle/
