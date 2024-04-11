@@ -1,3 +1,4 @@
+https://justdoittt.top/2024/04/11/sql%E6%B3%A8%E5%85%A5%E9%A2%84%E7%BC%96%E8%AF%91%E6%97%A0%E6%95%88%E7%9A%84%E6%83%85%E5%86%B5/
 https://justdoittt.top/2024/04/11/Oracle%E6%B3%A8%E5%85%A5/
 https://justdoittt.top/2024/04/09/NTLM-Relay%E6%94%BB%E5%87%BB/
 https://justdoittt.top/2024/04/01/%E5%85%A5%E9%97%A8%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E5%AE%9E%E9%AA%8C%E4%B8%80/
@@ -42,6 +43,7 @@ https://justdoittt.top/tags/Shiro/
 https://justdoittt.top/tags/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/
 https://justdoittt.top/tags/Redis/
 https://justdoittt.top/tags/Oracle/
+https://justdoittt.top/tags/sql%E6%B3%A8%E5%85%A5/
 https://justdoittt.top/categories/iptables/
 https://justdoittt.top/categories/CTF/
 https://justdoittt.top/categories/CTF/%E6%8F%90%E6%9D%83/
@@ -61,3 +63,4 @@ https://justdoittt.top/categories/Java/Shiro/
 https://justdoittt.top/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/
 https://justdoittt.top/categories/Redis/
 https://justdoittt.top/categories/Oracle/
+https://justdoittt.top/categories/sql%E6%B3%A8%E5%85%A5/

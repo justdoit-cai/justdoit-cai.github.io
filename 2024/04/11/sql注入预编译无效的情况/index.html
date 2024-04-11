@@ -1,0 +1,252 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>sql注入预编译无效的情况 | AnchorEureka' Blog</title><meta name="author" content="AnchorEureka"><meta name="copyright" content="AnchorEureka"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="错误的预编译使用有的开发人员可能以为只要 sql 语句经过了预编译就不会造成 sql 注入。其实预编译加参数占位才可以防御 sql 注入，只要用了字符串拼接 sql 语句，就都会有 sql 注入的风险。下面是一个错误的示例。 1234567891011121314151617181920212223package com.just.demo;import java.sql.*;public cla">
+<meta property="og:type" content="article">
+<meta property="og:title" content="sql注入预编译无效的情况">
+<meta property="og:url" content="https://justdoittt.top/2024/04/11/sql%E6%B3%A8%E5%85%A5%E9%A2%84%E7%BC%96%E8%AF%91%E6%97%A0%E6%95%88%E7%9A%84%E6%83%85%E5%86%B5/index.html">
+<meta property="og:site_name" content="AnchorEureka&#39; Blog">
+<meta property="og:description" content="错误的预编译使用有的开发人员可能以为只要 sql 语句经过了预编译就不会造成 sql 注入。其实预编译加参数占位才可以防御 sql 注入，只要用了字符串拼接 sql 语句，就都会有 sql 注入的风险。下面是一个错误的示例。 1234567891011121314151617181920212223package com.just.demo;import java.sql.*;public cla">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://justdoittt.top/img/bg7.jpg">
+<meta property="article:published_time" content="2024-04-10T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-04-11T11:10:01.682Z">
+<meta property="article:author" content="AnchorEureka">
+<meta property="article:tag" content="sql注入">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://justdoittt.top/img/bg7.jpg"><link rel="shortcut icon" href="/img/bg4.jpg"><link rel="canonical" href="https://justdoittt.top/2024/04/11/sql%E6%B3%A8%E5%85%A5%E9%A2%84%E7%BC%96%E8%AF%91%E6%97%A0%E6%95%88%E7%9A%84%E6%83%85%E5%86%B5/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'sql注入预编译无效的情况',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-04-11 19:10:01'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/imgs/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">20</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/bg7.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="AnchorEureka' Blog"><span class="site-name">AnchorEureka' Blog</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">sql注入预编译无效的情况</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-04-10T16:00:00.000Z" title="发表于 2024-04-11 00:00:00">2024-04-11</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-04-11T11:10:01.682Z" title="更新于 2024-04-11 19:10:01">2024-04-11</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/sql%E6%B3%A8%E5%85%A5/">sql注入</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="sql注入预编译无效的情况"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="错误的预编译使用"><a href="#错误的预编译使用" class="headerlink" title="错误的预编译使用"></a>错误的预编译使用</h1><p>有的开发人员可能以为只要 <code>sql</code> 语句经过了预编译就不会造成 <code>sql</code> 注入。其实预编译加参数占位才可以防御 <code>sql</code> 注入，只要用了字符串拼接 <code>sql</code> 语句，就都会有 <code>sql</code> 注入的风险。下面是一个错误的示例。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.just.demo;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.sql.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Demo2</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        Class.forName(<span class="string">&quot;com.mysql.cj.jdbc.Driver&quot;</span>);</span><br><span class="line">        <span class="type">String</span> <span class="variable">url</span> <span class="operator">=</span> <span class="string">&quot;jdbc:mysql://localhost:3306/db1&quot;</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">user</span> <span class="operator">=</span> <span class="string">&quot;root&quot;</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">password</span> <span class="operator">=</span> <span class="string">&quot;root&quot;</span>;</span><br><span class="line">        <span class="type">Connection</span> <span class="variable">conn</span> <span class="operator">=</span> DriverManager.getConnection(url, user, password);</span><br><span class="line">        <span class="type">String</span> <span class="variable">username</span> <span class="operator">=</span> <span class="string">&quot;anchor&quot;</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;select * from tb_user where username = &#x27;&quot;</span> + username + <span class="string">&quot;&#x27;&quot;</span>;</span><br><span class="line">        <span class="type">PreparedStatement</span> <span class="variable">ps</span> <span class="operator">=</span> conn.prepareStatement(sql);</span><br><span class="line">        <span class="type">ResultSet</span> <span class="variable">rs</span> <span class="operator">=</span> ps.executeQuery();</span><br><span class="line">        <span class="keyword">while</span> (rs.next()) &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;============================&quot;</span>);</span><br><span class="line">            System.out.println(rs.getString(<span class="number">1</span>));</span><br><span class="line">            System.out.println(rs.getString(<span class="number">2</span>));</span><br><span class="line">            System.out.println(rs.getString(<span class="number">3</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="参数位于like位置"><a href="#参数位于like位置" class="headerlink" title="参数位于like位置"></a>参数位于like位置</h1><p>如果我们没有试过把参数放到 <code>sql</code> 语句中 <code>like</code> 的位置，我们第一想法可能 <code>sql</code> 语句会写成下面的样子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;select * from tb_user where username like &#x27;%?%&#x27;&quot;</span> ;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/imgs/Pasted%20image%2020240411035323.png"></p>
+<p>但是可以发现上面的写法会无法绑定参数到 <code>?</code> 的位置。这是因为 <code>?</code> 的位置在两个引号中，此时程序会把这个 <code>?</code> 当作字符串处理。<br>所以这种情况下，开发可能会选择直接使用拼接语句，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;select * from tb_user where username like &#x27;%&quot;</span> + <span class="keyword">var</span> + <span class="string">&quot;%&#x27;&quot;</span> ;</span><br></pre></td></tr></table></figure>
+
+<p>可能开发以为这里使用了预编译就不会存在 <code>sql</code> 注入，但是这里由于用的是字符串拼接的 <code>sql</code> 语句，因此还是可以注入。</p>
+<p><img src="/imgs/Pasted%20image%2020240411040012.png"></p>
+<p>这里如果既想使用预编译，又想使用 <code>like</code> 模糊查询，正确的写法应该如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">sql</span> <span class="operator">=</span> <span class="string">&quot;select * from tb_user where username like concat(&#x27;%&#x27;, ?, &#x27;%&#x27;)&quot;</span> ;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/imgs/Pasted%20image%2020240411040248.png"></p>
+<h1 id="参数位于order-by位置"><a href="#参数位于order-by位置" class="headerlink" title="参数位于order by位置"></a>参数位于order by位置</h1><p>这种情况我们第一想法的写法可能如下：</p>
+<p><img src="/imgs/Pasted%20image%2020240411042743.png"></p>
+<p>但是会发现这里 <code>sql</code> 语句执行的结果和预计的结果不一致。</p>
+<p><img src="/imgs/Pasted%20image%2020240411042859.png"></p>
+<p>这里因为预编译在参数绑定的时候会把参数当作字符串来处理，而 <code>order by</code> 后面不应该接字符串，否则 <code>order by</code> 和没用一样。</p>
+<p><img src="/imgs/Pasted%20image%2020240411043249.png"></p>
+<p>所以实际情况如果真的要 <code>order by</code> 后面接动态参数，这里大概率也会被写成拼接，从而造成 <code>sql</code> 注入。解决方式只能是对这里对传入的动态参数加内容过滤。</p>
+<h1 id="其它类似order-by等不可参数化的地方"><a href="#其它类似order-by等不可参数化的地方" class="headerlink" title="其它类似order by等不可参数化的地方"></a>其它类似order by等不可参数化的地方</h1><p>由于参数化会把参数都当作字符串来处理，而 <code>sql</code> 语句中有些地方不能是字符串，例如这里提到的 <code>order by</code> ，还有 <code>group by</code> 。</p>
+<p><img src="/imgs/Pasted%20image%2020240411054109.png"></p>
+<h1 id="参数位于in位置"><a href="#参数位于in位置" class="headerlink" title="参数位于in位置"></a>参数位于in位置</h1><p><code>Mysql</code> 的 <code>jdbc</code> 虽然对预编译提供了 <code>setArray</code>() 和 <code>conn.createArrayOf()</code> 方法，但是并没有实现 <code>conn.createArrayOf()</code> 方法，导致如果想要 <code>in</code> 后面传入动态参数，大概率也要手动拼接传入数组内的元素，这就也可能造成 <code>sql</code> 注入。</p>
+<p><img src="/imgs/Pasted%20image%2020240411045024.png"></p>
+<p>可以看到这个方法压根没实现。</p>
+<p><img src="/imgs/Pasted%20image%2020240411045043.png"></p>
+<h1 id="宽字节注入-假预编译"><a href="#宽字节注入-假预编译" class="headerlink" title="宽字节注入+假预编译"></a>宽字节注入+假预编译</h1><p> <code>php</code> 中的 <code>pdo</code> 默认使用的是 <strong>假预编译</strong> 来防止的 <code>sql</code> 注入。 <strong>真预编译</strong> 是对 <code>sql</code> 执行的过程进行预编译来参数绑定，而 <strong>假预编译</strong> 只是对 <code>sql</code> 语句做了转义。一个是数据库来实现的预编译，一个是程序框架来实现的预编译。</p>
+<p>那为什么开发者要做一个虚假的预编译呢，那是因为一个参数：<code>PDO::ATTR_EMULATE_PREPARES</code> ，这个选项用来配置 <code>PDO</code> 是否使用模拟预编译，默认是 <code>true</code> ，因此默认情况下 <code>PDO</code> 采用的是模拟预编译模式，设置成 <code>false</code> 以后，才会使用真正的预编译。开启这个选项主要是用来兼容部分不支持预编译的数据库(如 <code>sqllite</code> 与低版本 <code>MySQL</code> )，对于模拟预编译，会 <strong>由客户端程序内部参数绑定这一过程(而不是数据库)，内部 <code>prepare</code> 之后再将拼接的 <code>sql</code> 语句发给数据库执行</strong> 。</p>
+<p>那么了解过宽字节注入的人就可以发现，假预编译是防不了宽字节注入的。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="comment"># 建立数据库连接</span></span><br><span class="line"><span class="variable">$dbs</span> = <span class="string">&quot;mysql:host=127.0.0.1;dbname=db1&quot;</span>;</span><br><span class="line"><span class="variable">$dbname</span> = <span class="string">&quot;root&quot;</span>;</span><br><span class="line"><span class="variable">$passwd</span> = <span class="string">&quot;root&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 创建连接,选择数据库,检测连接</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="variable">$conn</span> = <span class="keyword">new</span> <span class="title function_ invoke__">PDO</span>(<span class="variable">$dbs</span>, <span class="variable">$dbname</span>, <span class="variable">$passwd</span>);</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;Successful\n&quot;</span>;</span><br><span class="line">&#125; <span class="keyword">catch</span> (PDOException <span class="variable">$e</span>) &#123;</span><br><span class="line">    <span class="keyword">die</span> (<span class="string">&quot;Error!: &quot;</span> . <span class="variable">$e</span>-&gt;<span class="title function_ invoke__">getMessage</span>() . <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 预处理语句</span></span><br><span class="line"><span class="variable">$username</span> = <span class="string">&quot;xxx%df&#x27; union select 1,database(),3;#&quot;</span>;</span><br><span class="line"><span class="variable">$username</span> = <span class="title function_ invoke__">urldecode</span>(<span class="variable">$username</span>);</span><br><span class="line"><span class="variable">$conn</span>-&gt;<span class="title function_ invoke__">query</span>(<span class="string">&#x27;SET NAMES GBK&#x27;</span>);</span><br><span class="line"><span class="variable">$stmt</span> = <span class="variable">$conn</span>-&gt;<span class="title function_ invoke__">prepare</span>(<span class="string">&quot;select * from tb_user where username = ?&quot;</span>);</span><br><span class="line"><span class="variable">$stmt</span>-&gt;<span class="title function_ invoke__">bindParam</span>(<span class="number">1</span>, <span class="variable">$username</span>);</span><br><span class="line"><span class="variable">$stmt</span>-&gt;<span class="title function_ invoke__">execute</span>();</span><br><span class="line"><span class="variable">$fraction</span> = <span class="variable">$stmt</span>-&gt;<span class="title function_ invoke__">fetch</span>();</span><br><span class="line"><span class="title function_ invoke__">var_dump</span>(<span class="variable">$fraction</span>);</span><br><span class="line"><span class="variable">$conn</span> = <span class="literal">null</span>; <span class="comment"># 关闭链接</span></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>成功注入！</p>
+<p><img src="/imgs/Pasted%20image%2020240411052228.png"></p>
+<p>如果要使用真预编译，需要加上下面这一句代码。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$conn</span>-&gt;<span class="title function_ invoke__">setAttribute</span>(PDO::<span class="variable constant_">ATTR_EMULATE_PREPARES</span>, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
+
+<h1 id="判断真假预编译的方式"><a href="#判断真假预编译的方式" class="headerlink" title="判断真假预编译的方式"></a>判断真假预编译的方式</h1><p>最直观的判断方式就是看数据库的 <code>sql</code> 语句执行日志中是否执行了 <code>prepare</code> 操作。下面是一个真预编译情况：</p>
+<p><img src="/imgs/Pasted%20image%2020240411185845.png"></p>
+<p>而假预编译这里只会执行 <code>execute</code> 操作，而避免 <code>sql</code> 注入用的是转义或者其它操作，这就存在绕过的机会。</p>
+<p>通过 <code>\</code> 来转义避免：</p>
+<p><img src="/imgs/Pasted%20image%2020240411190134.png"></p>
+<p>通过在 <code>&#39;</code> 后面自动再加上一个 <code>&#39;</code> 闭合参数中的引号来避免：</p>
+<p><img src="/imgs/Pasted%20image%2020240411190018.png"></p>
+<p>而实际测试发现，其实很多框架都默认使用的是假预编译，除非专门配置了预编译配置。</p>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><p><a target="_blank" rel="noopener" href="https://forum.butian.net/share/1559">https://forum.butian.net/share/1559</a><br><a target="_blank" rel="noopener" href="https://fushuling.com/index.php/2023/10/27/%E9%A2%84%E7%BC%96%E8%AF%91%E4%B8%8Esql%E6%B3%A8%E5%85%A5/">https://fushuling.com/index.php/2023/10/27/%E9%A2%84%E7%BC%96%E8%AF%91%E4%B8%8Esql%E6%B3%A8%E5%85%A5/</a><br><a target="_blank" rel="noopener" href="https://xz.aliyun.com/t/7132">https://xz.aliyun.com/t/7132</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/justdoit-cai">AnchorEureka</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://justdoittt.top/2024/04/11/sql%E6%B3%A8%E5%85%A5%E9%A2%84%E7%BC%96%E8%AF%91%E6%97%A0%E6%95%88%E7%9A%84%E6%83%85%E5%86%B5/">https://justdoittt.top/2024/04/11/sql%E6%B3%A8%E5%85%A5%E9%A2%84%E7%BC%96%E8%AF%91%E6%97%A0%E6%95%88%E7%9A%84%E6%83%85%E5%86%B5/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://justdoittt.top" target="_blank">AnchorEureka' Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/sql%E6%B3%A8%E5%85%A5/">sql注入</a></div><div class="post_share"><div class="social-share" data-image="/img/bg7.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2024/04/11/Oracle%E6%B3%A8%E5%85%A5/" title="Oracle注入"><img class="cover" src="/img/bg15.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Oracle注入</div></div></a></div><div class="next-post pull-right"><a href="/2024/04/09/NTLM-Relay%E6%94%BB%E5%87%BB/" title="NTLM-Relay攻击"><img class="cover" src="/img/bg11.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">NTLM-Relay攻击</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/imgs/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">AnchorEureka</div><div class="author-info__description">just do it!</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">20</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">20</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/justdoit-cai"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/justdoit-cai" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:2068830937@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">大家一起冲冲冲!</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%94%99%E8%AF%AF%E7%9A%84%E9%A2%84%E7%BC%96%E8%AF%91%E4%BD%BF%E7%94%A8"><span class="toc-number">1.</span> <span class="toc-text">错误的预编译使用</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E4%BD%8D%E4%BA%8Elike%E4%BD%8D%E7%BD%AE"><span class="toc-number">2.</span> <span class="toc-text">参数位于like位置</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E4%BD%8D%E4%BA%8Eorder-by%E4%BD%8D%E7%BD%AE"><span class="toc-number">3.</span> <span class="toc-text">参数位于order by位置</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B6%E5%AE%83%E7%B1%BB%E4%BC%BCorder-by%E7%AD%89%E4%B8%8D%E5%8F%AF%E5%8F%82%E6%95%B0%E5%8C%96%E7%9A%84%E5%9C%B0%E6%96%B9"><span class="toc-number">4.</span> <span class="toc-text">其它类似order by等不可参数化的地方</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E4%BD%8D%E4%BA%8Ein%E4%BD%8D%E7%BD%AE"><span class="toc-number">5.</span> <span class="toc-text">参数位于in位置</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%BD%E5%AD%97%E8%8A%82%E6%B3%A8%E5%85%A5-%E5%81%87%E9%A2%84%E7%BC%96%E8%AF%91"><span class="toc-number">6.</span> <span class="toc-text">宽字节注入+假预编译</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%A4%E6%96%AD%E7%9C%9F%E5%81%87%E9%A2%84%E7%BC%96%E8%AF%91%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="toc-number">7.</span> <span class="toc-text">判断真假预编译的方式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="toc-number">8.</span> <span class="toc-text">参考文章</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/04/11/Oracle%E6%B3%A8%E5%85%A5/" title="Oracle注入"><img src="/img/bg15.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Oracle注入"/></a><div class="content"><a class="title" href="/2024/04/11/Oracle%E6%B3%A8%E5%85%A5/" title="Oracle注入">Oracle注入</a><time datetime="2024-04-10T16:00:00.000Z" title="发表于 2024-04-11 00:00:00">2024-04-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/11/sql%E6%B3%A8%E5%85%A5%E9%A2%84%E7%BC%96%E8%AF%91%E6%97%A0%E6%95%88%E7%9A%84%E6%83%85%E5%86%B5/" title="sql注入预编译无效的情况"><img src="/img/bg7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="sql注入预编译无效的情况"/></a><div class="content"><a class="title" href="/2024/04/11/sql%E6%B3%A8%E5%85%A5%E9%A2%84%E7%BC%96%E8%AF%91%E6%97%A0%E6%95%88%E7%9A%84%E6%83%85%E5%86%B5/" title="sql注入预编译无效的情况">sql注入预编译无效的情况</a><time datetime="2024-04-10T16:00:00.000Z" title="发表于 2024-04-11 00:00:00">2024-04-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/09/NTLM-Relay%E6%94%BB%E5%87%BB/" title="NTLM-Relay攻击"><img src="/img/bg11.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="NTLM-Relay攻击"/></a><div class="content"><a class="title" href="/2024/04/09/NTLM-Relay%E6%94%BB%E5%87%BB/" title="NTLM-Relay攻击">NTLM-Relay攻击</a><time datetime="2024-04-08T16:00:00.000Z" title="发表于 2024-04-09 00:00:00">2024-04-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/01/%E5%85%A5%E9%97%A8%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E5%AE%9E%E9%AA%8C%E4%B8%80/" title="入门内网渗透实验一"><img src="/img/bg3.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="入门内网渗透实验一"/></a><div class="content"><a class="title" href="/2024/04/01/%E5%85%A5%E9%97%A8%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F%E5%AE%9E%E9%AA%8C%E4%B8%80/" title="入门内网渗透实验一">入门内网渗透实验一</a><time datetime="2024-03-31T16:00:00.000Z" title="发表于 2024-04-01 00:00:00">2024-04-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/03/24/Thymeleaf%E6%BC%8F%E6%B4%9E%E6%B1%87%E6%80%BB/" title="Thymeleaf漏洞汇总"><img src="/img/bg10.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Thymeleaf漏洞汇总"/></a><div class="content"><a class="title" href="/2024/03/24/Thymeleaf%E6%BC%8F%E6%B4%9E%E6%B1%87%E6%80%BB/" title="Thymeleaf漏洞汇总">Thymeleaf漏洞汇总</a><time datetime="2024-03-23T16:00:00.000Z" title="发表于 2024-03-24 00:00:00">2024-03-24</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/imgs/bg4.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2024 By AnchorEureka</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Just do it!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: 'a7b0ec4b62c42ac613ca',
+      clientSecret: '56756824e86a782ebc5759e0e1fe96021d171f66',
+      repo: 'justdoit-cai.github.io',
+      owner: 'justdoit-cai',
+      admin: ['justdoit-cai'],
+      id: '1aa908c2088399bbb2338664c9689a7c',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+    getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.textContent= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-show-text" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-show-text.min.js" data-mobile="true" data-text="富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善" data-fontsize="22px" data-random="true" async="async"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
