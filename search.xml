@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>hook native方法and bypass</title>
+      <link href="/2024/04/21/hook%20native%E6%96%B9%E6%B3%95and%20bypass/"/>
+      <url>/2024/04/21/hook%20native%E6%96%B9%E6%B3%95and%20bypass/</url>
+      
+        <content type="html"><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p><a href="https://justdoittt.top/2023/11/20/rasp%E7%BB%95%E8%BF%87/">rasp绕过</a></p><h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>众所周知，<code>Java</code> 的 <code>RASP</code> 是没有办法直接 <code>Hook</code> <code>Native</code> 方法的，但确实有这个场景的需求。于是 <code>JDK</code> 官方出了一个 <code>java.lang.instrument.Instrumentation#setNativeMethodPrefix</code> ，在 <code>Java</code> 方法映射 <code>C++</code> 方法的时候加一个前缀，这样相当于创建一个了原有 <code>Native</code> 方法的代理，从而实现了 <code>Hook</code> <code>Native</code> 方法。</p><h1 id="native方法解析原理"><a href="#native方法解析原理" class="headerlink" title="native方法解析原理"></a>native方法解析原理</h1><p><code>Java</code> 无法直接访问到操作系统底层如硬件系统，为此 <code>Java</code> 提供了 <code>JNI</code> 来实现对于底层的访问。<code>JNI</code>，<code>Java Native Interface</code>，它是 <code>Java</code> 的 <code>SDK</code> 一部分，<code>JNI</code> 允许 <code>Java</code> 代码使用以其他语言编写的代码和代码库，本地程序中的函数也可以调用 <code>Java</code> 层的函数，即 <code>JNI</code> 实现了 <code>Java</code> 和本地代码间的双向交互。</p><p>在 <code>Java</code> 命令执行中，<code>Java</code> 执行操作系统命令实际上需要调用操作系统的系统函数（ <code>Windows</code> 平台为 <code>CreateProcess API</code> ，<code>*nix</code> 平台是通过 <code>fork</code> 和 <code>exec</code> 函数），而 <code>Java</code> 不能直接调用系统函数，而是通过 <code>forkAndExec</code> 这个 <code>native</code> 函数调用其用本地 <code>C</code> 代码实现的方法。</p><p>那某个 <code>native</code> 方法怎么知道调用本地的哪个 <code>C</code> 代码方法呢？</p><p>参考：<br><a href="https://github.com/JetBrains/jdk8u_jdk/blob/master/src/solaris/native/java/lang/UNIXProcess_md.c">https://github.com/JetBrains/jdk8u_jdk/blob/master/src/solaris/native/java/lang/UNIXProcess_md.c</a><br><img src="/imgs/Pasted%20image%2020240421192817.png"></p><p>可以看出 <code>native</code> 方法解析到本地方法函数是由 <code>Java</code> 类的包名称和方法名称组成，这个规则这称之为：<code>standard resolution</code>（标准解析）。</p><p>通过 <code>setNativeMethodPrefix</code> 函数对 <code>ClassFileTransformer</code> 设置 <code>native prefix</code> ，<code>JVM</code> 将会使用动态解析方式。</p><p>比如，现有一个 <code>native</code> 方法在标准解析下为：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">native boolean foo(int x); ====&gt; Java_somePackage_someClass_foo(JNIEnv* env, jint x);</span><br></pre></td></tr></table></figure><p>通过 <code>setNativeMethodPrefix</code> 函数设置了 <code>native prefix</code> ，且 <code>prefix</code> 为 <code>&quot;wrapped_&quot;</code> ，那么解析关系就会变为：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">native boolean wrapped_foo(int x); ====&gt; Java_somePackage_someClass_foo(JNIEnv* env, jint x);</span><br></pre></td></tr></table></figure><p>这是因为当设置为动态解析方式后，在不设置 <code>JNI RegisterNatives</code> 显式解析的情况下，JVM尝试：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">method(wrapped_foo) -&gt; nativeImplementation(wrapped_foo)</span><br></pre></td></tr></table></figure><p>当解析失败，会从 <code>nativeImplementation</code> 中删除 <code>prefix</code> 前缀，继续进行解析：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">method(wrapped_foo) -&gt; nativeImplementation(foo)</span><br></pre></td></tr></table></figure><p>这个时候如果想 <code>hook</code> 一个 <code>native</code> 方法，那么就可以通过 <code>ClassFileTransformer</code> 对类进行修改：</p><ol><li><p>移除想要 <code>hook</code> 的 <code>native</code> 方法。</p></li><li><p>增加一个 <code>native</code> 方法 ，这个方法和 <code>hook</code> 的 <code>native</code> 方法除了方法名增加 <code>prefix</code> ，其他相同。</p></li><li><p>增加一个和 <code>hook native</code> 方法同名的 <code>java</code> 方法（除了 <code>native modifier</code> 之外其他和 <code>hook native</code> 方法相同），其中返回时调用 <code>prefix native</code> 方法。</p></li></ol><p>这里的代码实现参考：<br><a href="https://github.com/justdoit-cai/javaAgent-learn/blob/main/native-rasp/native-rasp-agent/src/com/just/RaspTransformer.java">https://github.com/justdoit-cai/javaAgent-learn/blob/main/native-rasp/native-rasp-agent/src/com/just/RaspTransformer.java</a></p><h1 id="实验测试"><a href="#实验测试" class="headerlink" title="实验测试"></a>实验测试</h1><p>完整代码放到了<br><a href="https://github.com/justdoit-cai/javaAgent-learn/blob/main/native-rasp/">https://github.com/justdoit-cai/javaAgent-learn/blob/main/native-rasp/</a></p><p>我们先启动具有 <code>jackson</code> 漏洞环境的 <code>docker</code> 。</p><p><img src="/imgs/Pasted%20image%2020240421193859.png"></p><p>然后把 <code>native-rasp-agent.jar</code> 上传到这个容器中，并注入 <code>agent</code> 到目标 <code>java</code> 进程中。</p><p><img src="/imgs/Pasted%20image%2020240421203233.png"></p><p>然后我们模拟攻击方通过 <code>jackson</code> 的漏洞打入内存马并利用内存马执行命令：</p><p><img src="/imgs/Pasted%20image%2020240421194049.png"></p><p>看容器的日志可以发现已经成功 <code>hook</code> 了 <code>forkAndExec</code> 这个方法，并记录了其入参。这里没有直接返回来完全禁止调用这个方法，为了避免影响程序的其它部分。</p><p><img src="/imgs/Pasted%20image%2020240421193452.png"></p><blockquote><p>参考前言中分析过了的 <code>forkAndExec</code> 方法，我们可以知道执行的命令会被分到这个方法的第三个参数和第四个参数中，并且第四个参数中是用 <code>%00</code> 分割更多的参数的，这里 <code>new String()</code> 不会显示出来这里的 <code>%00</code> ，这就导致 <code>cp /home/flag /tmp/flag.txt</code> 的后两个参数会连到一起。这里为了方便只是测试就没有处理这里的 <code>%00</code> ，只是记得如果真的要做 <code>rasp</code> 记录这里的执行的命令的化要注意处理这里的 <code>%00</code> 。</p></blockquote><p><img src="/imgs/Pasted%20image%2020240421194500.png"></p><h1 id="补充说明（很关键！）"><a href="#补充说明（很关键！）" class="headerlink" title="补充说明（很关键！）"></a>补充说明（很关键！）</h1><p>注意上面注入 <code>agent</code> 的代码中用到的是 <code>GenericAgentTools.jar</code> 并非 <code>jdk</code> 中提供的 <code>tools.jar</code> ，<code>GenericAgentTools.jar</code> 是经过了加强的 <code>Tools.jar</code> ，同时兼容 <code>Windows</code> 版本和 <code>Linux</code> 版本（这个 <code>jar</code> 包我也不知道出自于哪里，是在别人的项目中找到的）。因为开发往往用的是 <code>Windows</code> ，所以我们打 <code>agent</code> 的 <code>jar</code> 包时如果打入的是 <code>Windows</code> 版本的 <code>tools.jar</code> 会导致 <code>agent.jar</code> 在 <code>Linux</code> 下无法运行。</p><p>报错信息如下：</p><p><img src="/imgs/Pasted%20image%2020240421033116.png"></p><p>这里 <code>tools.jar</code> 不能兼容不同环境是因为 <code>tools.jar</code> 是属于 <code>jdk</code> 的工具，在 <code>jre</code> 中不存在，而不同环境用的 <code>jdk</code> 是不同的，比如 <code>Linux</code> 用的是 <code>Linux</code> 的 <code>jdk</code> ，<code>Windows</code> 用的是 <code>Windows</code> 的 <code>jdk</code> ，两者是不一样的。参考 <a href="https://stackoverflow.com/questions/45053288/virtualmachine-list-returns-empty-list">https://stackoverflow.com/questions/45053288/virtualmachine-list-returns-empty-list</a></p><p>此外，要注意代码中的 <code>Class.forName(&quot;sun.tools.attach.HotSpotAttachProvider&quot;);</code> 很关键，没有这行代码虽然不会报错，但是就会在使用 <code>attach</code> 模式的时候（使用 <code>agent</code> 模式是没问题的）无法正确返回当前正在运行的 <code>VirtualMachine</code> （会发现 <code>VirtualMachine.list()</code> 一直为空），也就无法注入 <code>agent</code> 到目标程序中。这是因为目标程序的 <code>jvm</code> 在启动的时候并不会加载这个类，需要我们手动加载。</p><h1 id="绕过RASP-NativeMethodPrefix"><a href="#绕过RASP-NativeMethodPrefix" class="headerlink" title="绕过RASP NativeMethodPrefix"></a>绕过RASP NativeMethodPrefix</h1><p>但是即使我们前面 <code>hook</code> 了 <code>native</code> 的代码，还是存在手段绕过的。因为我们可以通过反射拿到真正的 <code>native</code> 方法，即可绕过 <code>RASP</code> 对于命令执行的 <code>hook</code> 。使用 <code>NativeMethodPrefix</code> 实现的 <code>native agent rasp</code> 真正的 <code>native</code> 方法的名字格式为： <code>&lt;前缀&gt;_forkAndExec</code> ，因此我们找 <code>UNIXProcess</code> 中方法名字以 <code>forkAndExec</code> 结尾，但是不等于 <code>forkAndExec</code> 的方法就是真正的原来的 <code>forkAndExec</code> 方法。</p><p>代码参考：</p><p><a href="https://github.com/justdoit-cai/javaAgent-learn/blob/main/native-rasp/native-rasp-bypass/src/main/java/com/just/SpringBoot3Memshell.java">https://github.com/justdoit-cai/javaAgent-learn/blob/main/native-rasp/native-rasp-bypass/src/main/java/com/just/SpringBoot3Memshell.java</a></p><h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><p><a href="https://www.jrasp.com/guide/technology/native_method.html">https://www.jrasp.com/guide/technology/native_method.html</a><br><a href="https://github.com/turn1tup/JvmRaspBypass/tree/main">https://github.com/turn1tup/JvmRaspBypass/tree/main</a><br><a href="https://www.secrss.com/articles/49044">https://www.secrss.com/articles/49044</a><br><a href="https://yzddmr6.com/posts/rasp-nativemethodprefix-bypass/">https://yzddmr6.com/posts/rasp-nativemethodprefix-bypass/</a></p>]]></content>
+      
+      
+      <categories>
+          
+          <category> Java </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Java </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>DCSync和DCShadow攻击</title>
       <link href="/2024/04/13/DCSync%E5%92%8CDCShadow%E6%94%BB%E5%87%BB/"/>
       <url>/2024/04/13/DCSync%E5%92%8CDCShadow%E6%94%BB%E5%87%BB/</url>
@@ -339,16 +364,12 @@
           
           <category> Java </category>
           
-          <category> 反序列化漏洞 </category>
-          
       </categories>
       
       
         <tags>
             
             <tag> Java </tag>
-            
-            <tag> 反序列化漏洞 </tag>
             
         </tags>
       
@@ -393,16 +414,12 @@
           
           <category> Java </category>
           
-          <category> RASP </category>
-          
       </categories>
       
       
         <tags>
             
             <tag> Java </tag>
-            
-            <tag> RASP </tag>
             
         </tags>
       
@@ -422,16 +439,12 @@
           
           <category> Java </category>
           
-          <category> 内存马 </category>
-          
       </categories>
       
       
         <tags>
             
             <tag> Java </tag>
-            
-            <tag> 内存马 </tag>
             
         </tags>
       
@@ -449,10 +462,6 @@
       
       <categories>
           
-          <category> CTF </category>
-          
-          <category> 提权 </category>
-          
           <category> MySQL </category>
           
       </categories>
@@ -461,8 +470,6 @@
         <tags>
             
             <tag> MySQL </tag>
-            
-            <tag> CTF </tag>
             
         </tags>
       
@@ -505,11 +512,7 @@
       
       <categories>
           
-          <category> CTF </category>
-          
           <category> Nodejs </category>
-          
-          <category> 沙箱逃逸 </category>
           
       </categories>
       
@@ -517,8 +520,6 @@
         <tags>
             
             <tag> Nodejs </tag>
-            
-            <tag> 沙箱逃逸 </tag>
             
         </tags>
       
@@ -536,18 +537,12 @@
       
       <categories>
           
-          <category> CTF </category>
-          
-          <category> 提权 </category>
-          
           <category> MySQL </category>
           
       </categories>
       
       
         <tags>
-            
-            <tag> 提权 </tag>
             
             <tag> MySQL </tag>
             
