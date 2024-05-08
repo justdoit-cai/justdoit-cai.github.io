@@ -1,0 +1,249 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>分块传输绕waf | AnchorEureka' Blog</title><meta name="author" content="AnchorEureka"><meta name="copyright" content="AnchorEureka"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="介绍分块传输编码（ Chunked transfer encoding ）是超文本传输协议（ HTTP ）中的一种数据传输机制，允许 HTTP由应用服务器发送给客户端应用（通常是网页浏览器）的数据可以分成多个部分。分块传输编码只在 HTTP 协议 1.1 版本（ HTTP&#x2F;1.1 ）中提供。通常，HTTP 应答消息中发送的数据是整个发送的，Content-Length 消息头字段表示数据的长度。数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分块传输绕waf">
+<meta property="og:url" content="https://justdoittt.top/2024/05/09/%E5%88%86%E5%9D%97%E4%BC%A0%E8%BE%93%E7%BB%95waf/index.html">
+<meta property="og:site_name" content="AnchorEureka&#39; Blog">
+<meta property="og:description" content="介绍分块传输编码（ Chunked transfer encoding ）是超文本传输协议（ HTTP ）中的一种数据传输机制，允许 HTTP由应用服务器发送给客户端应用（通常是网页浏览器）的数据可以分成多个部分。分块传输编码只在 HTTP 协议 1.1 版本（ HTTP&#x2F;1.1 ）中提供。通常，HTTP 应答消息中发送的数据是整个发送的，Content-Length 消息头字段表示数据的长度。数">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://justdoittt.top/img/bg14.jpg">
+<meta property="article:published_time" content="2024-05-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2024-05-08T16:09:48.459Z">
+<meta property="article:author" content="AnchorEureka">
+<meta property="article:tag" content="waf绕过">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://justdoittt.top/img/bg14.jpg"><link rel="shortcut icon" href="/img/bg4.jpg"><link rel="canonical" href="https://justdoittt.top/2024/05/09/%E5%88%86%E5%9D%97%E4%BC%A0%E8%BE%93%E7%BB%95waf/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"找不到您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '分块传输绕waf',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-05-09 00:09:48'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/imgs/avatar.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">15</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/bg14.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="AnchorEureka' Blog"><span class="site-name">AnchorEureka' Blog</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">分块传输绕waf</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-05-08T16:00:00.000Z" title="发表于 2024-05-09 00:00:00">2024-05-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-05-08T16:09:48.459Z" title="更新于 2024-05-09 00:09:48">2024-05-09</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/waf%E7%BB%95%E8%BF%87/">waf绕过</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.9k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>7分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="分块传输绕waf"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>分块传输编码（ <code>Chunked transfer encoding</code> ）是超文本传输协议（ <code>HTTP</code> ）中的一种数据传输机制，允许 <code>HTTP</code>由应用服务器发送给客户端应用（通常是网页浏览器）的数据可以分成多个部分。分块传输编码只在 <code>HTTP</code> 协议 <code>1.1</code> 版本（ <code>HTTP/1.1</code> ）中提供。通常，<code>HTTP</code> 应答消息中发送的数据是整个发送的，<code>Content-Length</code> 消息头字段表示数据的长度。数据的长度很重要，因为客户端需要知道哪里是应答消息的结束，以及后续应答消息的开始。然而，使用分块传输编码，数据分解成一系列数据块，并以一个或多个块发送，这样服务器可以发送数据而不需要预先知道发送内容的总大小。通常数据块的大小是一致的，但也不总是这种情况。</p>
+<p>一般情况 <code>HTTP</code> 请求包的<code>Header</code> 包含 <code>Content-Length</code> 来指明报文体的长度。有时候服务生成 <code>HTTP</code> 回应是无法确定消息大小的，比如大文件的下载，或者后台需要复杂的逻辑才能全部处理页面的请求，这时用需要实时生成消息长度，服务器一般使用 <code>chunked</code> 编码。在进行 <code>Chunked</code> 编码传输时，在回复消息的 <code>Headers</code> 有 <code>Transfer-Encoding</code> 域值为 <code>chunked</code> ，表示将用 <code>chunked</code> 编码传输内容。这在 <code>http</code> 协议中也是个常见的字段，用于 <code>http</code> 传送过程的分块技术，原因是 <code>http</code> 服务器响应的报文长度经常是不可预测的，使用 <code>Content-length</code> 的实体搜捕并不是总是管用。</p>
+<h1 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h1><p>在头部加入 <code>Transfer-Encoding: chunked</code> 之后，就代表这个报文采用了分块编码。这时，<code>post</code> 请求报文中的数据部分需要改为用一系列分块来传输。每个分块包含十六进制的长度值和数据，长度值独占一行，长度不包括它结尾的，也不包括分块数据结尾的，且最后需要用 <code>0</code> 独占一行表示结束。<br>例如下面这个数据包（注意最后的两个空行）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">POST /admin HTTP/1.1</span><br><span class="line">Host: localhost:8081</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Connection: close</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">Content-Type: text/plain</span><br><span class="line">Transfer-Encoding: Chunked</span><br><span class="line"></span><br><span class="line">7</span><br><span class="line">abcdefg</span><br><span class="line">a</span><br><span class="line">0123456789</span><br><span class="line">0</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>当开启了 <code>Transfer-Encoding</code> 时，<code>Content-Length</code> 的值就会不起作用，此时发的数据包的长度只会根据每个分块开头的长度值来发送数据。</p>
+<p><img src="/imgs/Pasted%20image%2020240508203830.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line">s = <span class="string">f&#x27;&#x27;&#x27;POST /post HTTP/1.1</span></span><br><span class="line"><span class="string">Host: localhost:8081</span></span><br><span class="line"><span class="string">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0</span></span><br><span class="line"><span class="string">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8</span></span><br><span class="line"><span class="string">Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2</span></span><br><span class="line"><span class="string">Accept-Encoding: gzip, deflate</span></span><br><span class="line"><span class="string">Connection: close</span></span><br><span class="line"><span class="string">Upgrade-Insecure-Requests: 1</span></span><br><span class="line"><span class="string">Content-Type: text/plain</span></span><br><span class="line"><span class="string">Content-Length: 1</span></span><br><span class="line"><span class="string">Transfer-Encoding: Chunked</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">7</span></span><br><span class="line"><span class="string">abcdefg</span></span><br><span class="line"><span class="string">a</span></span><br><span class="line"><span class="string">0123456789</span></span><br><span class="line"><span class="string">0</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span>.encode()</span><br><span class="line"></span><br><span class="line">io = remote(<span class="string">&#x27;localhost&#x27;</span>, <span class="number">5000</span>)</span><br><span class="line">io.send(s)</span><br><span class="line">a = io.recvall()</span><br><span class="line"><span class="built_in">print</span>(a)</span><br><span class="line">io.close()</span><br></pre></td></tr></table></figure>
+<h1 id="利用"><a href="#利用" class="headerlink" title="利用"></a>利用</h1><h2 id="常规分块绕WAF"><a href="#常规分块绕WAF" class="headerlink" title="常规分块绕WAF"></a>常规分块绕WAF</h2><p>有的 <code>http</code> 层面的 <code>waf</code> 并没有考虑分块传输的情况，导致假如 <code>waf</code> 过滤了某个关键词，我们就可以通过分块传输来分开发送某个关键字，从而绕过 <code>waf</code> 。</p>
+<p>利用 <a target="_blank" rel="noopener" href="https://github.com/c0ny1/chunked-coding-converter">chunked-coding-converter</a> 插件功能一键分块传输编码。（下面的图源自网上）</p>
+<p><img src="/imgs/Pasted%20image%2020240508215652.png"></p>
+<p>编码后：</p>
+<p><img src="/imgs/Pasted%20image%2020240508215721.png"></p>
+<h2 id="注释分块绕WAF"><a href="#注释分块绕WAF" class="headerlink" title="注释分块绕WAF"></a>注释分块绕WAF</h2><p>我们可以在 <a target="_blank" rel="noopener" href="https://tools.ietf.org/html/rfc7230">RFC7230</a> 中查看到有关分块传输的定义规范。通过阅读规范发现分块传输可以在长度标识处加上分号 <code>&quot;;&quot;</code> 作为注释，如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">9;kkkkk </span><br><span class="line">12345</span><br><span class="line">4;ooo=222 </span><br><span class="line">67890</span><br><span class="line">0\r\n\r\n</span><br></pre></td></tr></table></figure>
+
+<p>而很多可以识别 <code>Transfer-Encoding</code> 数据包的 <code>WAF</code> 并没有处理分块数据包中长度标识处的注释，导致在分块数据包中加入注释的话，<code>WAF</code> 就识别不出这个数据包了。</p>
+<p> 新版 <a target="_blank" rel="noopener" href="https://github.com/c0ny1/chunked-coding-converter">chunked-coding-converter</a> 插件已经可以自带给数据包中长度标识的后面加上随机注释了。不过要注意可能有的服务器也并没有识别分块数据包中长度标识处的注释。</p>
+<p><img src="/imgs/Pasted%20image%2020240508232524.png"></p>
+<p>编码后：</p>
+<p><img src="/imgs/Pasted%20image%2020240508232504.png"></p>
+<h2 id="畸形的分块绕WAF"><a href="#畸形的分块绕WAF" class="headerlink" title="畸形的分块绕WAF"></a>畸形的分块绕WAF</h2><p>假如有的 <code>waf</code> 遇到了畸形的分块会不拦截，而有的服务器可以容忍畸形的分块，这种解析差异可能会导致绕过 <code>waf</code> ，例如 <code>ModSecurity</code> 这个 <code>waf</code> 作用在 <code>Apache</code> 服务器上。</p>
+<p>我们发送下面畸形的分块数据包，这里 <code>aa</code> 数据长度为 <code>2</code> ，但是前面的长度标识为 <code>1</code> 。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">POST /sql.php?id=2%20union HTTP/1.1</span><br><span class="line">......</span><br><span class="line">Transfer-Encoding: chunked</span><br><span class="line"></span><br><span class="line">1</span><br><span class="line">aa</span><br><span class="line">0\r\n\r\n</span><br></pre></td></tr></table></figure>
+
+<p>由于 <code>ModSecurity</code> 会放行这个畸形的数据包（没试过现在修复没有），而 <code>Apache</code> 虽然遇到这个畸形的数据包会报错，但是提交的数据依旧可以传到 <code>php</code> ，从而绕过 <code>waf</code> 。</p>
+<h2 id="延时分块传输绕WAF"><a href="#延时分块传输绕WAF" class="headerlink" title="延时分块传输绕WAF"></a>延时分块传输绕WAF</h2><p>延时分块传输的原理是利用 <strong>在上一块传输完成后，sleep一段时间，再发送下一块</strong> ，从而让某些为了性能着想不会等待下一块的数据的 <code>waf</code> 直接放弃等待分块的数据。</p>
+<p><img src="/imgs/Pasted%20image%2020240509000308.png"></p>
+<p>需要注意我们块与块之间发送的间隔时间必须要小于后端中间件的 <code>post timeout</code> ，<code>Tomcat</code> 默认是 <code>20s</code> ，<code>weblogic</code> 是 <code>30s</code> 。</p>
+<p>延时分块传输的利用也可以用前面的工具来实现。</p>
+<h2 id="解析差异绕过"><a href="#解析差异绕过" class="headerlink" title="解析差异绕过"></a>解析差异绕过</h2><p>有的框架对 <code>Transfer-Encoding</code> 的值大小写不敏感，而有的框架敏感（必须要求全小写）。这就可能导致两个框架接收同一个请求获取到的数据是不一样的。假如某个请求的 <code>Tranfer-Encoding</code> 的值为 <code>CHunked</code> ，那么这个请求在大小写不敏感的框架中被解析就会按照分块传输的解析逻辑来解析（这种情况就会忽略 <code>Content-Length</code> 的值），而在大小写敏感的框架中就会按照 <code>Content-Length</code> 的长度来解析。</p>
+<p>例如开头中原理介绍中给出的数据包例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">POST /admin HTTP/1.1</span><br><span class="line">Host: localhost:8081</span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0</span><br><span class="line">Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Connection: close</span><br><span class="line">Upgrade-Insecure-Requests: 1</span><br><span class="line">Content-Type: text/plain</span><br><span class="line">Content-Length: 5</span><br><span class="line">Transfer-Encoding: CHunked</span><br><span class="line"></span><br><span class="line">7</span><br><span class="line">abcdefg</span><br><span class="line">a</span><br><span class="line">0123456789</span><br><span class="line">0</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>大小写不敏感的框架的解析结果为： </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">abcdefg123456789</span><br></pre></td></tr></table></figure>
+
+<p>大小写敏感的框架的解析结果为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">7</span><br><span class="line">abc</span><br></pre></td></tr></table></figure>
+
+<p>因为 <code>Content-Length: 5</code> ，所以这里只能读取到五个字节，注意这里包括 <code>7</code> 后面的换行符。</p>
+<p>那么假如存在这么一种情况，一个外网服务会将我们的请求转发给内网服务，而这两种服务存在上面介绍到的 <code>Transfer-Encoding</code> 解析差异。而外网服务要求请求数据中必须有 <code>&quot;admin&quot;</code> 字符串（举个例子而已）才会转发请求给内网服务，而内网服务会对请求数据就行判断，如果有 <code>&quot;admin&quot;</code> 就会进行某些危险操作，没有就进行常规操作。这种情况我们就可以利用 <code>Transfer-Encoding</code> 解析差异来绕过。</p>
+<p>这里有个考察了这个知识点的赛题： <a target="_blank" rel="noopener" href="https://blog.wm-team.cn/index.php/archives/75/">2024 d3ctf d3pythonhttp</a> <a target="_blank" rel="noopener" href="https://github.com/sajjadium/ctf-archives/tree/main/ctfs/D3CTF/2024/web/d3pythonhttp">附件地址</a> 。<code>flask</code> 框架就是 <code>Transfer-Encoding</code> 大小写不敏感的框架，<code>web.py</code> 是 <code>Transfer-Encoding</code> 大小写敏感的框架。</p>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><p><a target="_blank" rel="noopener" href="https://gv7.me/articles/2021/java-deserialized-data-bypasses-waf-through-sleep-chunked/">https://gv7.me/articles/2021/java-deserialized-data-bypasses-waf-through-sleep-chunked/</a><br><a target="_blank" rel="noopener" href="https://m.freebuf.com/articles/web/194351.html">https://m.freebuf.com/articles/web/194351.html</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/weixin_43571641/article/details/123749544">https://blog.csdn.net/weixin_43571641/article/details/123749544</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a target="_blank" rel="noopener" href="https://github.com/justdoit-cai">AnchorEureka</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://justdoittt.top/2024/05/09/%E5%88%86%E5%9D%97%E4%BC%A0%E8%BE%93%E7%BB%95waf/">https://justdoittt.top/2024/05/09/%E5%88%86%E5%9D%97%E4%BC%A0%E8%BE%93%E7%BB%95waf/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://justdoittt.top" target="_blank">AnchorEureka' Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/waf%E7%BB%95%E8%BF%87/">waf绕过</a></div><div class="post_share"><div class="social-share" data-image="/img/bg14.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2024/04/21/hook%20native%E6%96%B9%E6%B3%95and%20bypass/" title="hook native方法and bypass"><img class="cover" src="/img/haoyun.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">hook native方法and bypass</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/imgs/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">AnchorEureka</div><div class="author-info__description">just do it!</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">23</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">15</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">15</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/justdoit-cai"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/justdoit-cai" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:2068830937@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">大家一起冲冲冲!</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B"><span class="toc-number">2.</span> <span class="toc-text">示例</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%88%A9%E7%94%A8"><span class="toc-number">3.</span> <span class="toc-text">利用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%84%E5%88%86%E5%9D%97%E7%BB%95WAF"><span class="toc-number">3.1.</span> <span class="toc-text">常规分块绕WAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A8%E9%87%8A%E5%88%86%E5%9D%97%E7%BB%95WAF"><span class="toc-number">3.2.</span> <span class="toc-text">注释分块绕WAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%95%B8%E5%BD%A2%E7%9A%84%E5%88%86%E5%9D%97%E7%BB%95WAF"><span class="toc-number">3.3.</span> <span class="toc-text">畸形的分块绕WAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BB%B6%E6%97%B6%E5%88%86%E5%9D%97%E4%BC%A0%E8%BE%93%E7%BB%95WAF"><span class="toc-number">3.4.</span> <span class="toc-text">延时分块传输绕WAF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E6%9E%90%E5%B7%AE%E5%BC%82%E7%BB%95%E8%BF%87"><span class="toc-number">3.5.</span> <span class="toc-text">解析差异绕过</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="toc-number">4.</span> <span class="toc-text">参考文章</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2024/05/09/%E5%88%86%E5%9D%97%E4%BC%A0%E8%BE%93%E7%BB%95waf/" title="分块传输绕waf"><img src="/img/bg14.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="分块传输绕waf"/></a><div class="content"><a class="title" href="/2024/05/09/%E5%88%86%E5%9D%97%E4%BC%A0%E8%BE%93%E7%BB%95waf/" title="分块传输绕waf">分块传输绕waf</a><time datetime="2024-05-08T16:00:00.000Z" title="发表于 2024-05-09 00:00:00">2024-05-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/21/hook%20native%E6%96%B9%E6%B3%95and%20bypass/" title="hook native方法and bypass"><img src="/img/haoyun.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="hook native方法and bypass"/></a><div class="content"><a class="title" href="/2024/04/21/hook%20native%E6%96%B9%E6%B3%95and%20bypass/" title="hook native方法and bypass">hook native方法and bypass</a><time datetime="2024-04-20T16:00:00.000Z" title="发表于 2024-04-21 00:00:00">2024-04-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/13/DCSync%E5%92%8CDCShadow%E6%94%BB%E5%87%BB/" title="DCSync和DCShadow攻击"><img src="/img/bg14.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="DCSync和DCShadow攻击"/></a><div class="content"><a class="title" href="/2024/04/13/DCSync%E5%92%8CDCShadow%E6%94%BB%E5%87%BB/" title="DCSync和DCShadow攻击">DCSync和DCShadow攻击</a><time datetime="2024-04-12T16:00:00.000Z" title="发表于 2024-04-13 00:00:00">2024-04-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/11/Oracle%E6%B3%A8%E5%85%A5/" title="Oracle注入"><img src="/img/bg15.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Oracle注入"/></a><div class="content"><a class="title" href="/2024/04/11/Oracle%E6%B3%A8%E5%85%A5/" title="Oracle注入">Oracle注入</a><time datetime="2024-04-10T16:00:00.000Z" title="发表于 2024-04-11 00:00:00">2024-04-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2024/04/11/sql%E6%B3%A8%E5%85%A5%E9%A2%84%E7%BC%96%E8%AF%91%E6%97%A0%E6%95%88%E7%9A%84%E6%83%85%E5%86%B5/" title="sql注入预编译无效的情况"><img src="/img/bg7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="sql注入预编译无效的情况"/></a><div class="content"><a class="title" href="/2024/04/11/sql%E6%B3%A8%E5%85%A5%E9%A2%84%E7%BC%96%E8%AF%91%E6%97%A0%E6%95%88%E7%9A%84%E6%83%85%E5%86%B5/" title="sql注入预编译无效的情况">sql注入预编译无效的情况</a><time datetime="2024-04-10T16:00:00.000Z" title="发表于 2024-04-11 00:00:00">2024-04-11</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/imgs/bg4.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2023 - 2024 By AnchorEureka</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">Just do it!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: 'a7b0ec4b62c42ac613ca',
+      clientSecret: '56756824e86a782ebc5759e0e1fe96021d171f66',
+      repo: 'justdoit-cai.github.io',
+      owner: 'justdoit-cai',
+      admin: ['justdoit-cai'],
+      id: '752516d999da629f6d73fd34c4aad3e9',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+    getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.textContent= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script id="canvas_nest" defer="defer" color="0,0,255" opacity="0.7" zIndex="-1" count="99" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-nest.min.js"></script><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = true;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-show-text" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-show-text.min.js" data-mobile="true" data-text="富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善" data-fontsize="22px" data-random="true" async="async"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
